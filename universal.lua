@@ -1,5 +1,3 @@
-local Library = loadstring(game:HttpGet("https://pastebin.com/raw/MZrwt5Rm", true))()
-
 local Library = loadstring(HttpGet("https://raw.githubusercontent.com/Robojini/Tuturial_UI_Library/main/UI_Template_1"))()
  
 local Window = Library.CreateLib("Universal script", "RJTheme3")
@@ -8,17 +6,19 @@ local Tab = Window:NewTab("Main")
 
 local Section = Tab:NewSection("Misc")
 
+Section:NewToggle("ToggleText", "ToggleInfo", function(state)
+    if state then
+        game.RunService.Stepped:Connect(function() game.Players.LocalPlayer.Character.Head.CanCollide = false game.Players.LocalPlayer.Character.Torso.CanCollide = true end)
+    else
+        game.RunService.Stepped:Connect(function() game.Players.LocalPlayer.Character.Head.CanCollide = false game.Players.LocalPlayer.Character.Torso.CanCollide = false end)
+    end
+end)
+
 Section:NewSlider("WalkSpeed", "SliderInfo", 500, 0, function(s) 
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
 end)
 
-Section:NewSlider("JumpPower", "SliderInfo", 1000, 50, function(J)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = j
-end)
 
-Section:NewSlider("MaxHealh", "SliderInfo", 10000, 100, function(H)
-    game.Players.LocalPlayer.Character.Humanoid.MaxHealh = H
-end)
 
 local Section = Tab:NewSection("Soon...")
 
