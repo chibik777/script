@@ -6,19 +6,25 @@ local Tab = Window:NewTab("Main")
 
 local Section = Tab:NewSection("Misc")
 
-Section:NewToggle("ToggleText", "ToggleInfo", function(state)
+Section:NewToggle("Noclip", "???" function(state)
     if state then
-        game.RunService.Stepped:Connect(function() game.Players.LocalPlayer.Character.Head.CanCollide = false game.Players.LocalPlayer.Character.Torso.CanCollide = true end)
-    else
         game.RunService.Stepped:Connect(function() game.Players.LocalPlayer.Character.Head.CanCollide = false game.Players.LocalPlayer.Character.Torso.CanCollide = false end)
+    else
+        game.RunService.Stepped:Connect(function() game.Players.LocalPlayer.Character.Head.CanCollide = true game.Players.LocalPlayer.Character.Torso.CanCollide = true end)
     end
 end)
 
-Section:NewSlider("WalkSpeed", "SliderInfo", 500, 0, function(s) 
+Section:NewSlider("WalkSpeed", "Flash", 500, 0, function(s) 
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
 end)
 
+Section:NewSlider("JumpPower", "Jump to moon", 1000, 50, function(j) 
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = j
+end)
 
+Section:NewSlider("Health", "Deathpool", 10000, 67, function(s) 
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+end)
 
 local Section = Tab:NewSection("Soon...")
 
