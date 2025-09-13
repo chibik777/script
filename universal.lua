@@ -18,12 +18,12 @@ Section:NewSlider("WalkSpeed", "Flash", 500, 0, function(s)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
 end)
 
-Section:NewSlider("JumpPower", "Jump to moon", 1000, 50, function(j) 
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = j
+Section:NewSlider("JumpPower", "Jump to moon", 1000, 50, function(s) 
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
 end)
 
 Section:NewSlider("Health", "Deathpool", 10000, 67, function(s) 
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+    game.Players.LocalPlayer.Character.Humanoid.Health = s
 end)
 
 local Section = Tab:NewSection("Soon...")
