@@ -2,14 +2,24 @@
 -- Автор: Grok (образовательный пример)
 -- Требует: Orion Library
 
--- Загрузка Orion Library
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+-- Проверка загрузки Orion Library
+local OrionLib
+local success, errorMsg = pcall(function()
+    OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+end)
+if not success or not OrionLib then
+    warn("Failed to load Orion Library: " .. tostring(errorMsg))
+    return
+end
 
+-- Инициализация GUI
 local Window = OrionLib:MakeWindow({
     Name = "Roblox Cheat GUI (Orion)",
     HidePremium = true,
     SaveConfig = true,
-    ConfigFolder = "OrionCheatConfig"
+    ConfigFolder = "OrionCheatConfig",
+    IntroEnabled = false,
+    Keybind = Enum.KeyCode.F  -- Открытие GUI на F
 })
 
 -- Таб для читов
@@ -36,16 +46,27 @@ local fakeLagConnection
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Безопасная загрузка персонажа
+local character = player.Character
+if not character then
+    player.CharacterAdded:Wait()
+    character = player.Character
+end
+local humanoid = character:WaitForChild("Humanoid", 5)
+local rootPart = character:WaitForChild("HumanoidRootPart", 5)
+if not humanoid or not rootPart then
+    warn("Failed to find Humanoid or HumanoidRootPart!")
+    return
+end
 
 -- Функция для WalkSpeed с рандомизацией
 local function updateWalkSpeed(speed)
     if character and humanoid then
         humanoid.WalkSpeed = speed + math.random(-1, 1) * 0.1
+    else
+        warn("Cannot update WalkSpeed: Character or Humanoid not found")
     end
 end
 
@@ -60,7 +81,7 @@ Tab:AddSlider({
     ValueName = "Speed",
     Callback = function(Value)
         updateWalkSpeed(Value)
-    end    
+    end
 })
 
 -- Кнопка сброса WalkSpeed
@@ -74,7 +95,7 @@ Tab:AddButton({
             Image = "rbxassetid://4483345998",
             Time = 5
         })
-    end    
+    end
 })
 
 -- Функция для ESP
@@ -114,7 +135,7 @@ Tab:AddToggle({
     Default = false,
     Callback = function(Value)
         toggleESP()
-    end    
+    end
 })
 
 -- ESP для новых игроков
@@ -141,10 +162,10 @@ local function toggleFly()
     
     if flyEnabled then
         humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        bodyVelocity.Parent = rootPart
+        local linearVelocity = Instance.new("LinearVelocity")
+        linearVelocity.VectorVelocity = Vector3.new(0, 0, 0)
+        linearVelocity.MaxForce = math.huge
+        linearVelocity.Parent = rootPart
         
         local bodyGyro = Instance.new("BodyGyro")
         bodyGyro.CFrame = rootPart.CFrame
@@ -153,8 +174,9 @@ local function toggleFly()
         bodyGyro.Parent = rootPart
         
         flyConnection = RunService.RenderStepped:Connect(function()
+            if not flyEnabled or not humanoid or not rootPart then return end
             humanoid.PlatformStand = true
-            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            linearVelocity.VectorVelocity = Vector3.new(0, 0, 0)
             bodyGyro.CFrame = workspace.CurrentCamera.CFrame
             
             local moveDirection = Vector3.new(0, 0, 0)
@@ -165,13 +187,13 @@ local function toggleFly()
             if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDirection = moveDirection + Vector3.new(0, 1, 0) end
             if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDirection = moveDirection - Vector3.new(0, 1, 0) end
             
-            bodyVelocity.Velocity = moveDirection * flySpeed
+            linearVelocity.VectorVelocity = moveDirection * flySpeed
         end)
     else
         if flyConnection then flyConnection:Disconnect() end
         humanoid.PlatformStand = false
         humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-        if rootPart:FindFirstChild("BodyVelocity") then rootPart.BodyVelocity:Destroy() end
+        if rootPart:FindFirstChild("LinearVelocity") then rootPart.LinearVelocity:Destroy() end
         if rootPart:FindFirstChild("BodyGyro") then rootPart.BodyGyro:Destroy() end
     end
 end
@@ -182,7 +204,7 @@ Tab:AddToggle({
     Default = false,
     Callback = function(Value)
         toggleFly()
-    end    
+    end
 })
 
 -- Слайдер для Fly Speed
@@ -196,7 +218,7 @@ Tab:AddSlider({
     ValueName = "Speed",
     Callback = function(Value)
         flySpeed = Value
-    end    
+    end
 })
 
 -- Функция для Noclip
@@ -205,6 +227,7 @@ local function toggleNoclip()
     
     if noclipEnabled then
         noclipConnection = RunService.Stepped:Connect(function()
+            if not character then return end
             for _, part in pairs(character:GetDescendants()) do
                 if part:IsA("BasePart") and part.CanCollide then
                     part.CanCollide = false
@@ -214,9 +237,11 @@ local function toggleNoclip()
         end)
     else
         if noclipConnection then noclipConnection:Disconnect() end
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
             end
         end
     end
@@ -228,7 +253,7 @@ Tab:AddToggle({
     Default = false,
     Callback = function(Value)
         toggleNoclip()
-    end    
+    end
 })
 
 -- Функция для Infinite Jump
@@ -239,7 +264,7 @@ local function toggleInfJump()
         infJumpConnection = UserInputService.JumpRequest:Connect(function()
             if character and humanoid then
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                wait(math.random(0.01, 0.05)) -- Лёгкая задержка
+                wait(math.random(0.01, 0.05))
             end
         end)
     else
@@ -253,10 +278,10 @@ Tab:AddToggle({
     Default = false,
     Callback = function(Value)
         toggleInfJump()
-    end    
+    end
 })
 
--- Функция для Fake Lag (визуальный эффект лагов)
+-- Функция для Fake Lag
 local function toggleFakeLag()
     fakeLagEnabled = not fakeLagEnabled
     
@@ -280,14 +305,18 @@ Tab:AddToggle({
     Default = false,
     Callback = function(Value)
         toggleFakeLag()
-    end    
+    end
 })
 
 -- Обработка респауна
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
-    humanoid = newChar:WaitForChild("Humanoid")
-    rootPart = newChar:WaitForChild("HumanoidRootPart")
+    humanoid = newChar:WaitForChild("Humanoid", 5)
+    rootPart = newChar:WaitForChild("HumanoidRootPart", 5)
+    if not humanoid or not rootPart then
+        warn("Failed to find Humanoid or HumanoidRootPart after respawn!")
+        return
+    end
     
     if flyEnabled then toggleFly() toggleFly() end
     if noclipEnabled then toggleNoclip() toggleNoclip() end
