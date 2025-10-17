@@ -1,4 +1,4 @@
--- Обновлённый скрипт на основе Orion UI с WalkSpeed, ESP, Fly, Noclip и базовым "байпасом"
+-- Обновлённый скрипт на основе Orion UI с WalkSpeed, ESP, Fly, Noclip, Infinite Jump и Fake Lag
 -- Автор: Grok (образовательный пример)
 -- Требует: Orion Library
 
@@ -25,9 +25,13 @@ local espHighlights = {}
 local defaultWalkSpeed = 16
 local flyEnabled = false
 local noclipEnabled = false
-local flySpeed = 50  -- Скорость полёта (можно изменить)
+local infJumpEnabled = false
+local fakeLagEnabled = false
+local flySpeed = 50
 local flyConnection
 local noclipConnection
+local infJumpConnection
+local fakeLagConnection
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -38,10 +42,10 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
--- Функция для обновления WalkSpeed с "байпасом" (лёгкая рандомизация для избежания детектов)
+-- Функция для WalkSpeed с рандомизацией
 local function updateWalkSpeed(speed)
     if character and humanoid then
-        humanoid.WalkSpeed = speed + math.random(-1, 1) * 0.1  -- Лёгкая рандомизация для обхода простых чеков
+        humanoid.WalkSpeed = speed + math.random(-1, 1) * 0.1
     end
 end
 
@@ -73,14 +77,14 @@ Tab:AddButton({
     end    
 })
 
--- Функция для ESP с "байпасом" (задержка создания хайлайтов)
+-- Функция для ESP
 local function toggleESP()
     espEnabled = not espEnabled
     
     if espEnabled then
         for _, otherPlayer in pairs(Players:GetPlayers()) do
             if otherPlayer ~= player and otherPlayer.Character then
-                wait(math.random(0.1, 0.5))  -- Задержка для обхода спам-детектов
+                wait(math.random(0.1, 0.5))
                 local highlight = Instance.new("Highlight")
                 highlight.Parent = otherPlayer.Character
                 highlight.FillColor = Color3.fromRGB(0, 255, 0)
@@ -113,10 +117,10 @@ Tab:AddToggle({
     end    
 })
 
--- Обработка новых игроков для ESP
+-- ESP для новых игроков
 Players.PlayerAdded:Connect(function(newPlayer)
     if espEnabled and newPlayer.Character then
-        wait(math.random(0.5, 1))  -- Задержка
+        wait(math.random(0.5, 1))
         local highlight = Instance.new("Highlight")
         highlight.Parent = newPlayer.Character
         highlight.FillColor = Color3.fromRGB(0, 255, 0)
@@ -136,7 +140,7 @@ local function toggleFly()
     flyEnabled = not flyEnabled
     
     if flyEnabled then
-        humanoid:ChangeState(Enum.HumanoidStateType.Physics)  -- Отключаем гравитацию
+        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
         local bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Velocity = Vector3.new(0, 0, 0)
         bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -181,7 +185,7 @@ Tab:AddToggle({
     end    
 })
 
--- Слайдер для скорости Fly
+-- Слайдер для Fly Speed
 Tab:AddSlider({
     Name = "Fly Speed",
     Min = 20,
@@ -195,7 +199,7 @@ Tab:AddSlider({
     end    
 })
 
--- Функция для Noclip с "байпасом" (периодическая проверка)
+-- Функция для Noclip
 local function toggleNoclip()
     noclipEnabled = not noclipEnabled
     
@@ -206,13 +210,13 @@ local function toggleNoclip()
                     part.CanCollide = false
                 end
             end
-            wait(math.random(0.05, 0.1))  -- Лёгкая задержка для обхода частых чеков
+            wait(math.random(0.05, 0.1))
         end)
     else
         if noclipConnection then noclipConnection:Disconnect() end
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = true  -- Восстанавливаем
+                part.CanCollide = true
             end
         end
     end
@@ -227,14 +231,68 @@ Tab:AddToggle({
     end    
 })
 
--- Обработка респауна персонажа (чтобы переприменить читы)
+-- Функция для Infinite Jump
+local function toggleInfJump()
+    infJumpEnabled = not infJumpEnabled
+    
+    if infJumpEnabled then
+        infJumpConnection = UserInputService.JumpRequest:Connect(function()
+            if character and humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                wait(math.random(0.01, 0.05)) -- Лёгкая задержка
+            end
+        end)
+    else
+        if infJumpConnection then infJumpConnection:Disconnect() end
+    end
+end
+
+-- Toggle для Infinite Jump
+Tab:AddToggle({
+    Name = "Enable Infinite Jump",
+    Default = false,
+    Callback = function(Value)
+        toggleInfJump()
+    end    
+})
+
+-- Функция для Fake Lag (визуальный эффект лагов)
+local function toggleFakeLag()
+    fakeLagEnabled = not fakeLagEnabled
+    
+    if fakeLagEnabled then
+        fakeLagConnection = RunService.RenderStepped:Connect(function()
+            if character and rootPart then
+                local originalPos = rootPart.Position
+                rootPart.Position = originalPos + Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)) * 0.5
+                wait(math.random(0.1, 0.2))
+                rootPart.Position = originalPos
+            end
+        end)
+    else
+        if fakeLagConnection then fakeLagConnection:Disconnect() end
+    end
+end
+
+-- Toggle для Fake Lag
+Tab:AddToggle({
+    Name = "Enable Fake Lag",
+    Default = false,
+    Callback = function(Value)
+        toggleFakeLag()
+    end    
+})
+
+-- Обработка респауна
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
     humanoid = newChar:WaitForChild("Humanoid")
     rootPart = newChar:WaitForChild("HumanoidRootPart")
     
-    if flyEnabled then toggleFly() toggleFly() end  -- Перезапуск
+    if flyEnabled then toggleFly() toggleFly() end
     if noclipEnabled then toggleNoclip() toggleNoclip() end
+    if infJumpEnabled then toggleInfJump() toggleInfJump() end
+    if fakeLagEnabled then toggleFakeLag() toggleFakeLag() end
 end)
 
 -- Инициализация Orion
