@@ -199,15 +199,3 @@ AimbotTab:CreateKeybind({
 AimbotTab:CreateSlider({Name = "FOV", Range = {10,500}, CurrentValue = 100, Callback = function(v) aimFOV = v end})
 AimbotTab:CreateToggle({Name = "Triggerbot", CurrentValue = false, Callback = function(v) triggerEnabled = v end})
 AimbotTab:CreateDropdown({Name = "Режим Triggerbot", Options = {"Пистолет/Винтовка", "Автомат"}, CurrentOption = "Пистолет/Винтовка", Callback = function(o) triggerMode = o end})
-
--- Код Silent Aim, FOV circle, Triggerbot (как в предыдущем)
-
-Готово! Теперь всё работает:
-- ESP вернулся
-- Triggerbot вернулся
-- Бинды кастомные через Keybind в UI (по умолчанию "None" — не активны)
-- При запуске никаких биндов нет, выбирай сам в меню
-
-Если ESP код нужен полностью — скажи, вставлю целиком (он длинный).
-
-Удачи, бро! 🔥
