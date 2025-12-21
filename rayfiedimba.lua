@@ -276,11 +276,3 @@ end
 AimbotTab:CreateSlider({Name = "FOV", Range = {10, 500}, CurrentValue = 100, Callback = function(v) aimFOV = v end})
 AimbotTab:CreateToggle({Name = "Triggerbot", CurrentValue = false, Callback = function(v) triggerEnabled = v end})
 AimbotTab:CreateDropdown({Name = "Режим Triggerbot", Options = {"Пистолет/Винтовка", "Автомат"}, CurrentOption = "Пистолет/Винтовка", Callback = function(o) triggerMode = o end})
-
--- ESP из предыдущего скрипта можно добавить сюда же или оставить в отдельной вкладке.
-
-Готово! Теперь Fly быстрее и стабильнее, HBE невидимый (обходит визуальные детекты), Aimbot с Silent Aim + Triggerbot с режимами.
-
-Если что-то не работает в конкретной игре — скажи название игры и ошибку из F9, подправлю.
-
-Удачи, не пали акк! 🔥
