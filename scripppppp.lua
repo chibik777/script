@@ -13,5 +13,3 @@ task.spawn(function()
     -- или
     -- execute('start /min update.exe')
 end)
-
-print("✅ Pluto: Deployed silently")
